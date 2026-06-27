@@ -50,7 +50,9 @@ show_menu() {
   echo -e "  ${M}12)${N}  ${W}burp-gamma${N}        ${C}-${N} Convert Burp export"
   echo -e "  ${R}13)${N}  ${W}transform${N}         ${C}-${N} Transform script"
   echo -e "  ${Y}14)${N}  ${W}update POC${N}        ${C}-${N} Download POCs terbaru"
-  echo -e "  ${G}15)${N}  ${W}upgrade${N}           ${C}-${N} Update Xray"
+  echo -e "  ${G}15)${N}  ${W}POC builder${N}       ${C}-${N} Buat/validasi POC"
+  echo -e "  ${B}16)${N}  ${W}summary${N}           ${C}-${N} Gabung hasil scan"
+  echo -e "  ${M}17)${N}  ${W}install${N}           ${C}-${N} Setup tools"
   echo -e "  ${R} 0)${N}  ${W}Keluar${N}"
   echo ""
 }
@@ -200,11 +202,99 @@ upgrade_xray() {
   cd "$SCRIPT_DIR" && $XRAY upgrade
 }
 
+poc_builder() {
+  echo -e "${BOLD}${C}POC Builder${N}"
+  echo "  1) Buat POC baru (template)"
+  echo "  2) Validasi POC"
+  echo "  3) Lihat daftar POC"
+  echo -ne "${C}Pilih [1-3]:${N} "; read sub
+  case $sub in
+    1)
+      echo -ne "${C}Nama POC${N}: "; read name
+      [ -z "$name" ] && return
+      safe=$(echo "$name" | sed 's/[^a-zA-Z0-9_-]/-/g')
+      file="$POC_DIR/${safe}.yaml"
+      cat > "$file" << POCEOF
+name: $name
+rules:
+  r0:
+    request:
+      method: GET
+      path: "/"
+    expression: "true"
+detail:
+  author: Arif
+  links: []
+POCEOF
+      echo -e "${G}✓ POC created: $file${N}"
+      echo -ne "${C}Validate sekarang? [y/N]${N}: "; read val
+      if [ "$val" = "y" ] || [ "$val" = "Y" ]; then
+        cd "$SCRIPT_DIR" && $XRAY poclint --script "$file"
+      fi
+      ;;
+    2)
+      echo -ne "${C}POC file/path${N}: "; read pattern
+      [ -z "$pattern" ] && return
+      cd "$SCRIPT_DIR" && $XRAY poclint --script "$pattern"
+      ;;
+    3)
+      echo -e "${Y}POC list:${N}"
+      find "$POC_DIR" -name "*.yaml" -o -name "*.yml" 2>/dev/null | while read f; do
+        name=$(grep -m1 "^name:" "$f" 2>/dev/null | sed 's/name: *//')
+        echo -e "  ${C}$(basename $f)${N} - ${W}$name${N}"
+      done
+      total=$(find "$POC_DIR" -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l)
+      echo -e "${B}Total: $total POC${N}"
+      ;;
+  esac
+}
+
+summary_report() {
+  echo -e "${BOLD}${C}Summary Report${N}"
+  echo -e "${Y}Menggabungkan semua laporan di $REPORT_DIR...${N}"
+  ts=$(date +%Y%m%d-%H%M%S)
+  summary="$REPORT_DIR/summary-$ts.html"
+  cat > "$summary" << HTMLEOF
+<!DOCTYPE html><html><head><title>Xray Summary Report</title>
+<style>body{font-family:sans-serif;margin:20px;background:#1a1a2e;color:#eee}
+h1{color:#e94560}table{border-collapse:collapse;width:100%}
+th,td{padding:8px;text-align:left;border-bottom:1px solid #333}
+th{background:#16213e;color:#0f3460}a{color:#53d8fb;text-decoration:none}
+a:hover{color:#e94560}.ok{color:#4ecca3}.warn{color:#ffc300}</style></head><body>
+<h1>Xray Patched - Summary Report</h1>
+<p>Generated: $(date)</p>
+<table><tr><th>#</th><th>File</th><th>Size</th><th>Target</th></tr>
+HTMLEOF
+  i=0
+  for f in "$REPORT_DIR"/*.html; do
+    [ -f "$f" ] || continue
+    [ "$f" = "$summary" ] && continue
+    i=$((i+1))
+    name=$(basename "$f")
+    size=$(du -h "$f" | cut -f1)
+    target=$(grep -oP '(?<=<title>)[^<]+' "$f" 2>/dev/null | head -1)
+    [ -z "$target" ] && target=$(echo "$name" | sed 's/\.[^.]*$//')
+    echo "<tr><td>$i</td><td><a href=\"$name\">$name</a></td><td>$size</td><td>$target</td></tr>" >> "$summary"
+  done
+  echo "</table><hr><p>Total: $i reports</p></body></html>" >> "$summary"
+  echo -e "${G}✓ Summary: $summary${N}"
+}
+
+install_tool() {
+  echo -e "${Y}Menjalankan install.sh...${N}"
+  if [ -f "$SCRIPT_DIR/install.sh" ]; then
+    bash "$SCRIPT_DIR/install.sh"
+  else
+    echo -e "${R}install.sh tidak ditemukan${N}"
+  fi
+  echo -ne "${Y}Tekan Enter...${N}"; read
+}
+
 while true; do
   clear
   show_banner
   show_menu
-  echo -ne "${BOLD}${Y}Pilih menu [0-15]:${N} "
+  echo -ne "${BOLD}${Y}Pilih menu [0-17]:${N} "
   read pilihan
 
   case $pilihan in
@@ -222,7 +312,9 @@ while true; do
     12) burp_convert ;;
     13) transform_script ;;
     14) update_poc ;;
-    15) upgrade_xray ;;
+    15) poc_builder ;;
+    16) summary_report ;;
+    17) install_tool ;;
     0) echo -e "${R}Keluar...${N}"; exit 0 ;;
     *) echo -e "${R}Pilihan tidak valid!${N}" ;;
   esac
