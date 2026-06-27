@@ -1,0 +1,255 @@
+basic-crawler:
+  allow_visit_parent_path: false
+  basic_auth:
+    password: ''
+    username: ''
+  max_count_of_links: 0
+  max_depth: 0
+  restriction:
+    fragment_allowed: []
+    fragment_disallowed: []
+    hostname_allowed: []
+    hostname_disallowed:
+    - '*google*'
+    - '*github*'
+    - '*.gov.cn'
+    - '*.edu.cn'
+    - '*chaitin*'
+    - '*.xray.cool'
+    path_allowed: []
+    path_disallowed: []
+    port_allowed: []
+    port_disallowed: []
+    post_key_allowed: []
+    post_key_disallowed: []
+    query_key_allowed: []
+    query_key_disallowed: []
+http:
+  allow_methods:
+  - HEAD
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  - CONNECT
+  - TRACE
+  - MOVE
+  - PROPFIND
+  dial_timeout: 5
+  enable_http2: false
+  fail_retries: 0
+  headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0
+  max_conns_per_host: 50
+  max_qps: 500
+  max_redirect: 5
+  max_resp_body_size: 2097152
+  proxy: ''
+  proxy_rule: []
+  read_timeout: 10
+mitm:
+  allow_ip_range: []
+  basic_auth:
+    password: ''
+    username: ''
+  ca_cert: ./ca.crt
+  ca_key: ./ca.key
+  proxy_header:
+    via: ''
+    x_forwarded: false
+  queue:
+    max_length: 3000
+  restriction:
+    fragment_allowed: []
+    fragment_disallowed: []
+    hostname_allowed: []
+    hostname_disallowed:
+    - '*google*'
+    - '*github*'
+    - '*.gov.cn'
+    - '*.edu.cn'
+    - '*chaitin*'
+    - '*.xray.cool'
+    path_allowed: []
+    path_disallowed: []
+    port_allowed: []
+    port_disallowed: []
+    post_key_allowed: []
+    post_key_disallowed: []
+    query_key_allowed: []
+    query_key_disallowed: []
+  upstream_proxy: ''
+parallel: 30
+plugins:
+  baseline:
+    detect_china_bank_card: false
+    detect_china_id_card_number: false
+    detect_china_phone_number: false
+    detect_cookie_httponly: false
+    detect_cors_header_config: true
+    detect_http_header_config: false
+    detect_outdated_ssl_version: false
+    detect_phpinfo: true
+    detect_private_ip: false
+    detect_server_error_page: true
+    detect_system_path_leak: false
+    enabled: true
+  brute-force:
+    enabled: true
+    password_dictionary: ''
+    username_dictionary: ''
+  cmd-injection:
+    enabled: true
+  crlf-injection:
+    enabled: true
+  dirscan:
+    depth: 1
+    dictionary: ''
+    enabled: true
+    exclude_dir: []
+  fastjson:
+    enabled: true
+  jsonp:
+    enabled: true
+  path-traversal:
+    enabled: true
+  phantasm:
+    auto_load_poc: false
+    depth: 1
+    enabled: true
+    exclude_poc: []
+    include_poc: []
+    poc_tags:
+      poc-yaml-test:
+      - HW
+      - ST
+      poc-yaml-test-1:
+      - ST
+  redirect:
+    enabled: true
+  shiro:
+    aes_key: []
+    aes_key_file: null
+    cookie_name: rememberMe
+    enabled: true
+  sqldet:
+    boolean_based_detection: true
+    detect_sqli_in_cookie: true
+    enabled: true
+    error_based_detection: true
+    time_based_detection: true
+    use_comment_in_payload: false
+  ssrf:
+    enabled: true
+  struts:
+    enabled: true
+  thinkphp:
+    detect_thinkphp_sqli: true
+    enabled: true
+  upload:
+    enabled: true
+  xss:
+    detect_xss_in_cookie: true
+    enabled: true
+    ie_feature: false
+  xstream:
+    enabled: true
+    full: false
+  xxe:
+    enabled: true
+reverse:
+  client:
+    dns_server_ip: ''
+    http_base_url: ''
+    remote_server: false
+  db_file_path: ''
+  dns:
+    enabled: true
+    listen_ip: 0.0.0.0
+    listen_port: '5353'
+  http:
+    enabled: true
+    listen_ip: 0.0.0.0
+    listen_port: '9999'
+  rmi:
+    enabled: true
+    listen_ip: 0.0.0.0
+    listen_port: '1099'
+  token: xray-reverse-token
+subdomain:
+  allow_recursion: false
+  ip_only: false
+  max_parallel: 500
+  max_recursion_depth: 3
+  servers:
+  - 8.8.8.8
+  - 8.8.4.4
+  - 223.5.5.5
+  - 223.6.6.6
+  - 114.114.114.114
+  sources:
+    alienvault:
+      enabled: true
+    ask:
+      enabled: true
+      page_limit: 12
+    baidu:
+      enabled: true
+      page_limit: 12
+    bing:
+      enabled: true
+      page_limit: 12
+    brute:
+      enabled: true
+      main_dict: ''
+      sub_dict: ''
+    bufferover:
+      enabled: true
+    certspotter:
+      enabled: true
+    crt:
+      enabled: true
+    dnsfinder:
+      enabled: true
+    fofa:
+      email: ''
+      enabled: false
+      key: ''
+    google:
+      enabled: true
+      page_limit: 12
+    hackertarget:
+      enabled: true
+    httpfinder:
+      enabled: true
+    ip138:
+      enabled: true
+    myssl:
+      enabled: true
+    qianxun:
+      enabled: true
+    quake:
+      enabled: false
+      key: ''
+    rapiddns:
+      enabled: true
+    riskiq:
+      enabled: false
+      key: ''
+      user: ''
+    sogou:
+      enabled: true
+      page_limit: 12
+    sublist3r:
+      enabled: true
+    threatminer:
+      enabled: true
+    virusTotal:
+      enabled: true
+    yahoo:
+      enabled: true
+      page_limit: 12
+  web_only: false
+version: 4.0
