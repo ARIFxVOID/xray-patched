@@ -21,136 +21,7 @@ BOLD='\033[1m'
 
 mkdir -p "$REPORT_DIR" "$LIST_DIR"
 
-# Auto-generate xray.yaml / module.xray.yaml / plugin.xray.yaml if missing
-if [ ! -f "$SCRIPT_DIR/xray.yaml" ]; then
-  cat > "$SCRIPT_DIR/xray.yaml" << 'EOFCONF'
-- description: All plugins
-  disabled_plugins: []
-  enabled_plugins:
-  - printer
-  - service-scan
-  - target-parser
-  - vuln-scan
-  module_config: module.xray.yaml
-  name: x
-  plugin_config: plugin.xray.yaml
-  plugin_path:
-  - ./plugin
-EOFCONF
-  cat > "$SCRIPT_DIR/module.xray.yaml" << 'EOFCONF'
-Client:
-  allow_methods:
-  - HEAD
-  - GET
-  - POST
-  - PUT
-  - PATCH
-  - DELETE
-  - OPTIONS
-  - CONNECT
-  - TRACE
-  dial_timeout: 5
-  enable_http2: false
-  fail_retries: 0
-  headers: {}
-  max_conns_per_host: 50
-  max_qps: 500
-  max_redirect: 5
-  max_resp_body_size: 2.097152e+06
-  passive_mode: false
-  pkcs12:
-    Password: ""
-    Path: ""
-  proxy: ""
-  proxy_rule: null
-  read_timeout: 10
-Pool:
-  size: 100
-Reverse:
-  client:
-    dns_server_ip: ""
-    http_base_url: ""
-    remote_server: false
-    reverse_api: ""
-    reverse_server_url: ""
-    rmi_server_addr: ""
-  db_file_path: ""
-  dns:
-    domain: ""
-    enabled: false
-    is_domain_name_server: false
-    listen_ip: 0.0.0.0
-    resolve:
-    - record: localhost
-      ttl: 60
-      type: A
-      value: 127.0.0.1
-  http:
-    enabled: false
-    ip_header: ""
-    listen_ip: 0.0.0.0
-    listen_port: ""
-  rmi:
-    enabled: false
-    listen_ip: 127.0.0.1
-    listen_port: ""
-  token: ""
-EOFCONF
-  cat > "$SCRIPT_DIR/plugin.xray.yaml" << 'EOFCONF'
-printer:
-  disable_host_print: false
-  disable_port_print: false
-  disable_service_print: false
-  disable_website_print: false
-service-scan:
-  bandwidth: 1000
-  flag:
-    bandwidth: bandwidth,bw
-    max_service_per_host: max-srv,ms
-    port: port,p
-    skip_fingerprint: skip-fingerprint,sf
-    skip_live: skip-live,sl
-    skip_syn: skip-syn,ss
-    skip_web_fingerprint: skip-web,sw
-    timeout: timeout
-  max_service_per_host: 0
-  port: 22,80,443
-  skip_fingerprint: false
-  skip_live: false
-  skip_syn: false
-  skip_web_fingerprint: false
-  timeout: 2
-target-parser:
-  flag:
-    target: target,t
-  group_size: 256
-  target: ""
-vuln-scan:
-  config_file: config.yaml
-  flag:
-    config_file: config
-    html_output: html-output,ho
-    json_output: json_output,jo
-    level: level
-    log_level: log-level
-    plugins: plugins
-    poc: poc
-    stdout: stdout
-    tags: tags
-    text_output: text-output,to
-    webhook_output: webhook-output,wo
-  html_output: ""
-  json_output: ""
-  level: ""
-  log_level: ""
-  plugins: ""
-  poc: ""
-  stdout: true
-  tags: ""
-  text_output: ""
-  webhook_output: ""
-EOFCONF
-fi
+bash "$SCRIPT_DIR/config-gen.sh" "$SCRIPT_DIR" 2>/dev/null
 
 show_banner() {
   echo -e "${R}____  ___.________.    ____.   _____.___.${N}"
@@ -319,15 +190,16 @@ transform_script() {
 }
 
 update_poc() {
-  echo -e "${Y}Download POC terbaru dari github...${N}"
+  echo -e "${Y}Download POC terbaru dari chaitin/xray...${N}"
   mkdir -p "$POC_DIR"
-  echo -e "${W}Clone repo POC xray...${N}"
-  if [ -d "$POC_DIR/.git" ]; then
-    cd "$POC_DIR" && git pull
-  else
-    git clone --depth 1 https://github.com/ARIFxVOID/xray-patched.git "$POC_DIR" 2>/dev/null || \
-    git clone --depth 1 https://github.com/chaitin/xray.git /tmp/xray-pocs 2>/dev/null && \
+  rm -rf /tmp/xray-pocs 2>/dev/null
+  git clone --depth 1 https://github.com/chaitin/xray.git /tmp/xray-pocs 2>/dev/null
+  if [ -d /tmp/xray-pocs/pocs ]; then
     cp -r /tmp/xray-pocs/pocs/* "$POC_DIR/" 2>/dev/null
+    rm -rf /tmp/xray-pocs
+    echo -e "${G}✓ POC berhasil diupdate${N}"
+  else
+    echo -e "${R}✗ Gagal clone repo POC${N}"
   fi
   total=$(find "$POC_DIR" -name "*.yml" -o -name "*.yaml" 2>/dev/null | wc -l)
   echo -e "${G}Total POC: $total${N}"
@@ -469,7 +341,7 @@ while true; do
     *) echo -e "${R}Pilihan tidak valid!${N}" ;;
   esac
 
-  if [ "$pilihan" != "0" ] && [ "$pilihan" != "10" ]; then
+  if [ "$pilihan" != "0" ]; then
     echo ""
     echo -ne "${BOLD}${Y}Tekan Enter untuk kembali...${N}"
     read

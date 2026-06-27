@@ -287,7 +287,7 @@ xray subdomain example.com
 ```
 
 **What happens:**
-1. Xray performs passive subdomain enumeration using公开 sources
+1. Xray performs passive subdomain enumeration using public sources
 2. Attempts active discovery techniques
 3. Results are saved to `reports/subdomain-YYYYMMDD-HHMMSS.html`
 
@@ -798,6 +798,104 @@ POCs are saved to the `poc/` directory.
 
 ---
 
+### Menu 13: Validate POC
+
+Check a POC YAML file for syntax and structural errors.
+
+```
+Pilih menu [0-22]: 13
+POC file/pattern: ./poc/*.yaml
+```
+
+Uses xray's built-in `poclint` command.
+
+---
+
+### Menu 14: Reverse Server
+
+Start the built-in reverse HTTP/DNS/RMI server for out-of-band detection.
+
+```
+Pilih menu [0-22]: 14
+Starting reverse server...
+```
+
+Configured via `config.yaml` under the `reverse` section.
+
+---
+
+### Menu 15: Generate CA
+
+Generate a CA certificate and key for HTTPS MITM interception.
+
+```
+Pilih menu [0-22]: 15
+CA cert: /path/to/xray/ca.crt
+CA key:  /path/to/xray/ca.key
+```
+
+---
+
+### Menu 16: Version
+
+Display the current xray version and build info.
+
+```
+Pilih menu [0-22]: 16
+Version: 1.9.11/eb0c331d/ADVANCED
+```
+
+---
+
+### Menu 17: Convert
+
+Convert scan results between formats (JSON, HTML, etc.).
+
+```
+Pilih menu [0-22]: 17
+File input (json/html): report.json
+File output: report.html
+```
+
+---
+
+### Menu 18: Burp Export Convert
+
+Convert Burp Suite proxy export files into xray-compatible POC format.
+
+```
+Pilih menu [0-22]: 18
+File export Burp: burp_export.xml
+Output POC: burp_poc.yaml
+```
+
+---
+
+### Menu 19: Transform Script
+
+Transform xray scripts to different formats.
+
+```
+Pilih menu [0-22]: 19
+File input: script.gamma
+Output: script.yaml
+```
+
+---
+
+### Menu 22: Install
+
+Re-run the installation script to set up or update dependencies.
+
+```
+Pilih menu [0-22]: 22
+Menjalankan install.sh...
+```
+
+Runs the full installer (binary copy, config gen, dependency install, symlink creation).
+
+---
+
 ### Menu 20: Schedule Scan
 
 ```
@@ -821,11 +919,7 @@ Total target: 3
 ```
 
 Scans all URLs in the specified file.
-Target URL: https://target.com
-[Auto Exploit] Target: https://target.com
 ```
-
-Runs the full exploitation pipeline. See the CLI section for detailed explanation.
 
 ---
 

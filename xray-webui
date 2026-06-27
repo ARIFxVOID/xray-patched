@@ -137,7 +137,18 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         reports = self.scan_reports()
         total = len(reports)
         today = sum(1 for r in reports if r["time"].startswith(datetime.now().strftime("%Y-%m-%d")))
-        vuln_count = sum(1 for r in reports if "vuln" in r["file"].lower() or "xss" in r["file"].lower())
+        vuln_count = 0
+        for r in reports:
+            fpath = os.path.join(REPORT_DIR, r["file"])
+            try:
+                with open(fpath, "rb") as fh:
+                    raw = fh.read(1048576)  # first 1MB
+                vuln_count += raw.count(b"vuln-")
+                vuln_count += raw.count(b"class=\"vuln\"")
+                vuln_count += raw.count(b"class=\"danger\"")
+                vuln_count += raw.count(b"severity")
+            except:
+                pass
         from datetime import timedelta
         cutoff = (datetime.now() - timedelta(hours=24)).isoformat()
         new_count = sum(1 for r in reports if r["time"] > cutoff)

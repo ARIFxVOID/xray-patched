@@ -3,7 +3,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPORT_DIR="$SCRIPT_DIR/reports"
 POC_DIR="$SCRIPT_DIR/poc"
 
-R='\033[31m'; G='\033[32m'; Y='\033[33m'; B='\034[34m'; C='\033[36m'; W='\033[37m'; N='\033[0m'
+R='\033[31m'; G='\033[32m'; Y='\033[33m'; B='\033[34m'; C='\033[36m'; W='\033[37m'; N='\033[0m'
 BOLD='\033[1m'
 
 interactsh_setup() {
