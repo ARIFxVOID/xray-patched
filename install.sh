@@ -131,10 +131,9 @@ SHEOF
   echo -e "  ${G}✓${N} Run with: ${BOLD}xray${N}"
 fi
 
-# 5. Done
 # 5. Install dependencies
 echo -e "${Y}[5/6]${N} Installing dependencies..."
-if command -v pkg &>/dev/null; then
+if [ -d /data/data/com.termux ] && command -v pkg &>/dev/null; then
   pkg install -y python python-pip exploitdb 2>/dev/null || true
 elif command -v apt &>/dev/null; then
   apt install -y python3 python3-pip exploitdb 2>/dev/null || true
