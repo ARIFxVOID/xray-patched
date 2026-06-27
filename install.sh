@@ -21,8 +21,9 @@ else
 fi
 
 # 2. Config
-echo -e "${Y}[2/5]${N} Generating config..."
+echo -e "${Y}[2/5]${N} Generating config files..."
 cd "$DIR"
+# config.yaml (vuln-scan settings)
 if [ ! -f config.yaml ]; then
   "$BIN" webscan --url http://example.com &>/dev/null &
   PID=$!
@@ -40,10 +41,72 @@ cfg['reverse']['rmi'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port':
 cfg['reverse']['token'] = 'xray-reverse-token'
 with open('config.yaml', 'w') as f: yaml.dump(cfg, f, default_flow_style=False)
 " 2>/dev/null
-  echo -e "  ${G}✓${N} Config ready (reverse server ON)"
-else
-  echo -e "  ${Y}!${N} Config not generated, run menu and scan once"
 fi
+
+# xray.yaml / module.xray.yaml / plugin.xray.yaml (command & plugin config)
+python3 -c "
+import yaml
+# xray.yaml
+xray_cfg = [{
+    'name': 'x',
+    'description': 'A command that enables all plugins.',
+    'enabled_plugins': ['printer','service-scan','target-parser','vuln-scan'],
+    'disabled_plugins': [],
+    'plugin_path': ['./plugin'],
+    'module_config': 'module.xray.yaml',
+    'plugin_config': 'plugin.xray.yaml'
+}]
+with open('xray.yaml', 'w') as f: yaml.dump(xray_cfg, f, default_flow_style=False)
+
+# module.xray.yaml
+module_cfg = {
+    'Client': {
+        'allow_methods': ['HEAD','GET','POST','PUT','PATCH','DELETE','OPTIONS','CONNECT','TRACE'],
+        'dial_timeout': 5, 'enable_http2': False, 'fail_retries': 0,
+        'headers': {}, 'max_conns_per_host': 50, 'max_qps': 500,
+        'max_redirect': 5, 'max_resp_body_size': 2097152.0,
+        'passive_mode': False, 'pkcs12': {'Password': '', 'Path': ''},
+        'proxy': '', 'proxy_rule': None, 'read_timeout': 10
+    },
+    'Pool': {'size': 100},
+    'Reverse': {
+        'client': {'dns_server_ip': '', 'http_base_url': '', 'remote_server': False,
+                   'reverse_api': '', 'reverse_server_url': '', 'rmi_server_addr': ''},
+        'db_file_path': '', 'token': '',
+        'dns': {'enabled': False, 'domain': '', 'is_domain_name_server': False,
+                'listen_ip': '0.0.0.0', 'resolve': [{'record':'localhost','ttl':60,'type':'A','value':'127.0.0.1'}]},
+        'http': {'enabled': False, 'ip_header': '', 'listen_ip': '0.0.0.0', 'listen_port': ''},
+        'rmi': {'enabled': False, 'listen_ip': '127.0.0.1', 'listen_port': ''}
+    }
+}
+with open('module.xray.yaml', 'w') as f: yaml.dump(module_cfg, f, default_flow_style=False)
+
+# plugin.xray.yaml
+plugin_cfg = {
+    'printer': {'disable_host_print': False, 'disable_port_print': False,
+                'disable_service_print': False, 'disable_website_print': False},
+    'service-scan': {'bandwidth': 1000,
+        'flag': {'bandwidth':'bandwidth,bw','max_service_per_host':'max-srv,ms',
+                 'port':'port,p','skip_fingerprint':'skip-fingerprint,sf',
+                 'skip_live':'skip-live,sl','skip_syn':'skip-syn,ss',
+                 'skip_web_fingerprint':'skip-web,sw','timeout':'timeout'},
+        'max_service_per_host': 0, 'port': '22,80,443',
+        'skip_fingerprint': False, 'skip_live': False, 'skip_syn': False,
+        'skip_web_fingerprint': False, 'timeout': 2},
+    'target-parser': {'flag': {'target':'target,t'}, 'group_size': 256, 'target': ''},
+    'vuln-scan': {'config_file': 'config.yaml',
+        'flag': {'config_file':'config','html_output':'html-output,ho',
+                 'json_output':'json_output,jo','level':'level','log_level':'log-level',
+                 'plugins':'plugins','poc':'poc','stdout':'stdout','tags':'tags',
+                 'text_output':'text-output,to','webhook_output':'webhook-output,wo'},
+        'html_output': '', 'json_output': '', 'level': '', 'log_level': '',
+        'plugins': '', 'poc': '', 'stdout': True, 'tags': '',
+        'text_output': '', 'webhook_output': ''}
+}
+with open('plugin.xray.yaml', 'w') as f: yaml.dump(plugin_cfg, f, default_flow_style=False)
+" 2>/dev/null
+
+echo -e "  ${G}✓${N} Config files ready (xray.yaml, module.xray.yaml, plugin.xray.yaml)"
 
 # 3. Directories
 echo -e "${Y}[3/5]${N} Creating directories..."
