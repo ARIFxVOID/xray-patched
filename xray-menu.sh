@@ -40,24 +40,24 @@ show_menu() {
   echo -e "  ${Y} 2)${N}  ${W}servicescan${N}      ${C}-${N} Scan service/port"
   echo -e "  ${G} 3)${N}  ${W}subdomain${N}        ${C}-${N} Scan subdomain"
   echo -e "  ${C} 4)${N}  ${W}x${N}                ${C}-${N} Scan semua plugin"
-  echo -e "  ${B} 5)${N}  ${W}webscan massal${N}   ${C}-${N} Scan dari file list"
-  echo -e "  ${M} 6)${N}  ${W}schedule scan${N}    ${C}-${N} Scan otomatis berulang"
-  echo -e "  ${R} 7)${N}  ${W}poclint${N}           ${C}-${N} Validasi POC yaml"
-  echo -e "  ${Y} 8)${N}  ${W}reverse${N}           ${C}-${N} Jalankan reverse server"
-  echo -e "  ${G} 9)${N}  ${W}genca${N}             ${C}-${N} Generate CA"
-  echo -e "  ${C}10)${N}  ${W}version${N}           ${C}-${N} Tampilkan versi"
-  echo -e "  ${B}11)${N}  ${W}convert${N}           ${C}-${N} Convert hasil scan"
-  echo -e "  ${M}12)${N}  ${W}burp-gamma${N}        ${C}-${N} Convert Burp export"
-  echo -e "  ${R}13)${N}  ${W}transform${N}         ${C}-${N} Transform script"
-  echo -e "  ${Y}14)${N}  ${W}update POC${N}        ${C}-${N} Download POCs terbaru"
-  echo -e "  ${G}15)${N}  ${W}POC builder${N}       ${C}-${N} Buat/validasi POC"
-  echo -e "  ${B}16)${N}  ${W}summary${N}           ${C}-${N} Gabung hasil scan"
-  echo -e "  ${M}17)${N}  ${W}install${N}           ${C}-${N} Setup tools"
-  echo -e "  ${R}18)${N}  ${W}web UI${N}            ${C}-${N} Dashboard browser"
-  echo -e "  ${Y}19)${N}  ${W}CVE lookup${N}        ${C}-${N} Cari detail CVE"
-  echo -e "  ${G}20)${N}  ${W}searchsploit${N}      ${C}-${N} Cari exploit DB"
-  echo -e "  ${B}21)${N}  ${W}diff scan${N}          ${C}-${N} Banding hasil scan"
-  echo -e "  ${M}22)${N}  ${W}auto exploit${N}       ${C}-${N} Scan + exploit target"
+  echo -e "  ${B} 5)${N}  ${W}POC builder${N}      ${C}-${N} Buat/validasi POC"
+  echo -e "  ${M} 6)${N}  ${W}CVE lookup${N}       ${C}-${N} Cari detail CVE"
+  echo -e "  ${R} 7)${N}  ${W}searchsploit${N}     ${C}-${N} Cari exploit DB"
+  echo -e "  ${Y} 8)${N}  ${W}diff scan${N}         ${C}-${N} Banding hasil scan"
+  echo -e "  ${G} 9)${N}  ${W}auto exploit${N}      ${C}-${N} Scan + exploit target"
+  echo -e "  ${C}10)${N}  ${W}summary${N}           ${C}-${N} Gabung hasil scan"
+  echo -e "  ${B}11)${N}  ${W}web UI${N}            ${C}-${N} Dashboard browser"
+  echo -e "  ${M}12)${N}  ${W}update POC${N}        ${C}-${N} Download POCs terbaru"
+  echo -e "  ${R}13)${N}  ${W}poclint${N}           ${C}-${N} Validasi POC yaml"
+  echo -e "  ${Y}14)${N}  ${W}reverse${N}           ${C}-${N} Jalankan reverse server"
+  echo -e "  ${G}15)${N}  ${W}genca${N}             ${C}-${N} Generate CA"
+  echo -e "  ${C}16)${N}  ${W}version${N}           ${C}-${N} Tampilkan versi"
+  echo -e "  ${B}17)${N}  ${W}convert${N}           ${C}-${N} Convert hasil scan"
+  echo -e "  ${M}18)${N}  ${W}burp-gamma${N}        ${C}-${N} Convert Burp export"
+  echo -e "  ${R}19)${N}  ${W}transform${N}         ${C}-${N} Transform script"
+  echo -e "  ${Y}20)${N}  ${W}schedule scan${N}    ${C}-${N} Scan otomatis berulang"
+  echo -e "  ${G}21)${N}  ${W}webscan massal${N}   ${C}-${N} Scan dari file list"
+  echo -e "  ${B}22)${N}  ${W}install${N}           ${C}-${N} Setup tools"
   echo -e "  ${R} 0)${N}  ${W}Keluar${N}"
   echo ""
 }
@@ -307,33 +307,33 @@ while true; do
     2) servicescan_menu ;;
     3) subdomain_menu ;;
     4) x_scan ;;
-    5) webscan_massal ;;
-    6) schedule_scan ;;
-    7) validate_poc ;;
-    8) start_reverse ;;
-    9) gen_ca ;;
-    10) show_version ;;
-    11) convert_file ;;
-    12) burp_convert ;;
-    13) transform_script ;;
-    14) update_poc ;;
-    15) poc_builder ;;
-    16) summary_report ;;
-    17) install_tool ;;
-    18) python3 "$SCRIPT_DIR/xray-webui" ;;
-    19)
+    5) poc_builder ;;
+    6)
       echo -ne "${C}CVE ID${N}: "; read cve_id
       bash "$SCRIPT_DIR/xray-tools" cve "$cve_id"
       ;;
-    20)
+    7)
       echo -ne "${C}Search${N}: "; read sq
       bash "$SCRIPT_DIR/xray-tools" searchsploit "$sq"
       ;;
-    21) bash "$SCRIPT_DIR/xray-tools" diff ;;
-    22)
+    8) bash "$SCRIPT_DIR/xray-tools" diff ;;
+    9)
       echo -ne "${C}Target URL${N}: "; read tgt
       bash "$SCRIPT_DIR/xray-tools" exploit "$tgt"
       ;;
+    10) summary_report ;;
+    11) python3 "$SCRIPT_DIR/xray-webui" ;;
+    12) update_poc ;;
+    13) validate_poc ;;
+    14) start_reverse ;;
+    15) gen_ca ;;
+    16) show_version ;;
+    17) convert_file ;;
+    18) burp_convert ;;
+    19) transform_script ;;
+    20) schedule_scan ;;
+    21) webscan_massal ;;
+    22) install_tool ;;
     0) echo -e "${R}Keluar...${N}"; exit 0 ;;
     *) echo -e "${R}Pilihan tidak valid!${N}" ;;
   esac

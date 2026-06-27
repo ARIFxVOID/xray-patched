@@ -1,16 +1,14 @@
 #!/bin/bash
 # Xray Patched CLI - https://github.com/ARIFxVOID/xray-patched
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-XRAY_CACHE="/data/data/com.termux/files/home/.xray-patched"
 REPORT_DIR="$SCRIPT_DIR/reports"
 
-if [ ! -x "$XRAY_CACHE" ]; then
-  cp "$SCRIPT_DIR/xray-patched" "$XRAY_CACHE" 2>/dev/null
-  chmod +x "$XRAY_CACHE" 2>/dev/null
+XRAY="$HOME/.xray-patched"
+if [ ! -x "$XRAY" ]; then
+  cp "$SCRIPT_DIR/xray-patched" "$XRAY" 2>/dev/null
+  chmod +x "$XRAY" 2>/dev/null
 fi
-XRAY="$XRAY_CACHE"
-[ -x "$XRAY" ] || XRAY="$SCRIPT_DIR/xray-patched"
-[ -x "$XRAY" ] || { echo "Xray binary not found"; exit 1; }
+[ -x "$XRAY" ] || { echo "Xray binary not found at $XRAY"; exit 1; }
 
 mkdir -p "$REPORT_DIR"
 
@@ -20,19 +18,18 @@ show_help() {
   echo "  xray servicescan <host:port>    Scan service/port"
   echo "  xray subdomain <domain>         Scan subdomain"
   echo "  xray fullscan <url>             Scan semua plugin"
-  echo "  xray massal <file>              Scan dari file list"
-  echo "  xray schedule <url> [int] [cnt] Scan berulang"
   echo "  xray poclint <pattern>          Validasi POC"
+  echo "  xray webui                      Dashboard browser"
+  echo "  xray tools cve <CVE-ID>         CVE lookup + searchsploit"
+  echo "  xray tools searchsploit <q>     Search exploit-db"
+  echo "  xray tools diff                 Diff scan results"
+  echo "  xray tools exploit <url>        Auto exploit target"
+  echo "  xray tools interactsh           Setup interact.sh"
   echo "  xray reverse                    Start reverse server"
   echo "  xray genca                      Generate CA"
   echo "  xray version                    Tampilkan versi"
-  echo "  xray webui                      Dashboard browser"
-  echo "  xray tools <cmd> [args]         Tools (interactsh/CVE/exploit/diff)"
-  echo "  xray tools exploit <url>        Auto exploit target"
-  echo "  xray tools cve <CVE-ID>         CVE lookup + searchsploit"
-  echo "  xray tools interactsh           Setup interact.sh"
-  echo "  xray tools diff                 Diff scan results"
-  echo "  xray tools searchsploit <q>     Search exploit-db"
+  echo "  xray schedule <url> [int] [cnt] Scan berulang"
+  echo "  xray massal <file>              Scan dari file list"
   echo "  xray menu                       Mode interaktif"
   echo "  xray help                       Ini"
 }
@@ -68,22 +65,27 @@ case "${1:-menu}" in
     cd "$SCRIPT_DIR" && $XRAY x --url "$url" --html-output "$out"
     echo "Report: $out"
     ;;
-  massal)
-    file="${2:-}"
-    [ -z "$file" ] && { echo "Usage: xray massal <file>"; exit 1; }
-    [ ! -f "$file" ] && { echo "File not found: $file"; exit 1; }
-    total=$(wc -l < "$file")
-    i=0
-    while IFS= read -r url; do
-      [ -z "$url" ] && continue
-      i=$((i+1))
-      ts=$(date +%Y%m%d-%H%M%S)
-      safe=$(echo "$url" | sed 's|https\?://||;s|[/:]|_|g')
-      out="$REPORT_DIR/massal-${i}-${safe}-$ts.html"
-      echo "[$i/$total] $url"
-      cd "$SCRIPT_DIR" && $XRAY webscan --url "$url" --html-output "$out" 2>/dev/null
-    done < "$file"
-    echo "Done: $i targets"
+  poclint)
+    pattern="${2:-}"
+    [ -z "$pattern" ] && pattern="$SCRIPT_DIR/poc/*.yaml"
+    cd "$SCRIPT_DIR" && $XRAY poclint --script "$pattern"
+    ;;
+  webui)
+    python3 "$SCRIPT_DIR/xray-webui"
+    ;;
+  tools)
+    shift
+    bash "$SCRIPT_DIR/xray-tools" "$@"
+    ;;
+  reverse)
+    cd "$SCRIPT_DIR" && $XRAY reverse
+    ;;
+  genca)
+    cd "$SCRIPT_DIR" && $XRAY genca
+    echo "CA: $SCRIPT_DIR/ca.crt"
+    ;;
+  version)
+    cd "$SCRIPT_DIR" && $XRAY version
     ;;
   schedule)
     url="${2:-}"
@@ -102,27 +104,22 @@ case "${1:-menu}" in
     done
     echo "Schedule done"
     ;;
-  poclint)
-    pattern="${2:-}"
-    [ -z "$pattern" ] && pattern="$SCRIPT_DIR/poc/*.yaml"
-    cd "$SCRIPT_DIR" && $XRAY poclint --script "$pattern"
-    ;;
-  reverse)
-    cd "$SCRIPT_DIR" && $XRAY reverse
-    ;;
-  genca)
-    cd "$SCRIPT_DIR" && $XRAY genca
-    echo "CA: $SCRIPT_DIR/ca.crt"
-    ;;
-  version)
-    cd "$SCRIPT_DIR" && $XRAY version
-    ;;
-  webui)
-    python3 "$SCRIPT_DIR/xray-webui"
-    ;;
-  tools)
-    shift
-    bash "$SCRIPT_DIR/xray-tools" "$@"
+  massal)
+    file="${2:-}"
+    [ -z "$file" ] && { echo "Usage: xray massal <file>"; exit 1; }
+    [ ! -f "$file" ] && { echo "File not found: $file"; exit 1; }
+    total=$(wc -l < "$file")
+    i=0
+    while IFS= read -r url; do
+      [ -z "$url" ] && continue
+      i=$((i+1))
+      ts=$(date +%Y%m%d-%H%M%S)
+      safe=$(echo "$url" | sed 's|https\?://||;s|[/:]|_|g')
+      out="$REPORT_DIR/massal-${i}-${safe}-$ts.html"
+      echo "[$i/$total] $url"
+      cd "$SCRIPT_DIR" && $XRAY webscan --url "$url" --html-output "$out" 2>/dev/null
+    done < "$file"
+    echo "Done: $i targets"
     ;;
   menu|"")
     bash "$SCRIPT_DIR/xray-menu.sh"
