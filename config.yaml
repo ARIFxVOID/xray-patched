@@ -161,9 +161,8 @@ plugins:
     enabled: true
 reverse:
   client:
-    dns_server_ip: ''
-    http_base_url: ''
-    remote_server: false
+    remote_server: true
+    reverse_api: https://api.interactsh.com
   db_file_path: ''
   dns:
     enabled: true
@@ -173,11 +172,12 @@ reverse:
     enabled: true
     listen_ip: 0.0.0.0
     listen_port: '9999'
+  remote_server: true
   rmi:
     enabled: true
     listen_ip: 0.0.0.0
     listen_port: '1099'
-  token: xray-reverse-token
+  token: xray-reverse-token-1337
 subdomain:
   allow_recursion: false
   ip_only: false

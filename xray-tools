@@ -12,8 +12,9 @@ interactsh_setup() {
 import yaml
 with open('$SCRIPT_DIR/config.yaml') as f: cfg = yaml.safe_load(f)
 cfg.setdefault('reverse', {})
+tok = cfg['reverse'].get('token','xray-reverse-token-1337')
 cfg['reverse']['db_file_path'] = ''
-cfg['reverse']['token'] = ''
+cfg['reverse']['token'] = tok
 cfg['reverse']['http'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '9999'}
 cfg['reverse']['dns'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '5353'}
 cfg['reverse']['rmi'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '1099'}
@@ -27,30 +28,53 @@ with open('$SCRIPT_DIR/config.yaml', 'w') as f: yaml.dump(cfg, f, default_flow_s
 
 cve_lookup() {
   cve_id="${1:-}"
-  [ -z "$cve_id" ] && echo -ne "${C}CVE ID${N} (contoh: CVE-2023-21839): " && read cve_id
+  [ -z "$cve_id" ] && echo -ne "${C}CVE ID${N} (contoh: CVE-2024-21626): " && read cve_id
   [ -z "$cve_id" ] && return
+  cve_id=$(echo "$cve_id" | tr '[:lower:]' '[:upper:]')
   echo -e "${BOLD}${C}[CVE Lookup]${N} Looking up $cve_id..."
+  
   data=$(curl -s "https://cve.circl.lu/api/cve/$cve_id" 2>/dev/null)
-  if [ -z "$data" ] || echo "$data" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null | grep -q .; then
-    python3 -c "
+  python3 -c "
 import sys,json
-d=json.load(sys.stdin)
-print(f'  ID      : {d.get(\"id\",\"N/A\")}')
-print(f'  Score   : {d.get(\"cvss\",{}).get(\"score\",\"N/A\")}')
-print(f'  Severity: {d.get(\"cvss\",{}).get(\"severity\",\"N/A\")}')
-print(f'  Desc    : {d.get(\"description\",\"N/A\")[:300]}')
-print(f'  Products: {\", \".join([v.get(\"product\",\"\") for v in d.get(\"vulnerable_product\",[])])}')
+try:
+    d=json.load(sys.stdin)
+    # New API format (CVE 5.0)
+    meta = d.get('cveMetadata',{})
+    cid = meta.get('cveId','N/A')
+    containers = d.get('containers',{}).get('cna',{})
+    desc = (containers.get('descriptions',[{}])[0].get('value','N/A'))[:300]
+    metrics = containers.get('metrics',[])
+    score = 'N/A'
+    sev = 'N/A'
+    for m in metrics:
+        for k in ('cvssV3_1','cvssV3_0','cvssV2_0'):
+            cvss = m.get(k,{})
+            if cvss:
+                score = cvss.get('baseScore','N/A')
+                sev = cvss.get('baseSeverity','N/A')
+                break
+        if score != 'N/A': break
+    # Fallback: old format
+    if cid == 'N/A':
+        cid = d.get('id','N/A')
+        score = d.get('cvss',{}).get('score','N/A')
+        sev = d.get('cvss',{}).get('severity','N/A')
+        desc = d.get('description','N/A')[:300]
+    print(f'  ID      : {cid}')
+    print(f'  Score   : {score}')
+    print(f'  Severity: {sev}')
+    print(f'  Desc    : {desc}')
+except Exception as e:
+    print(f'  Error: {e}')
 " <<< "$data" 2>/dev/null
-    # Searchsploit
-    if command -v searchsploit &>/dev/null; then
-      echo ""
-      echo -e "${BOLD}${Y}[Searchsploit]${N} Looking for exploits..."
-      searchsploit --cve "$cve_id" 2>/dev/null | grep -v "^$" | head -20
-    else
-      echo -e "${Y}[!] searchsploit not installed. Install: apt install exploitdb${N}"
-    fi
+  
+  # Searchsploit
+  if command -v searchsploit &>/dev/null; then
+    echo ""
+    echo -e "${BOLD}${Y}[Searchsploit]${N} Looking for exploits..."
+    searchsploit --cve "$cve_id" 2>/dev/null | grep -v "^$" | head -20
   else
-    echo -e "${R}CVE not found${N}"
+    echo -e "${Y}[!] searchsploit not installed. Install: apt install exploitdb${N}"
   fi
 }
 
@@ -71,26 +95,26 @@ diff_scan() {
   echo -e "${BOLD}${C}[Diff Scan]${N} Comparing scan results..."
   diff_dir="$REPORT_DIR/.diffs"
   prev_file="$diff_dir/previous.txt"
+  curr_file="$diff_dir/current.txt"
   mkdir -p "$diff_dir"
-  # Snapshot current
-  curr_file=$(mktemp)
+  : > "$curr_file"
   for f in "$REPORT_DIR"/*.html; do
-    [ -f "$f" ] && [ "$(basename "$f")" != "summary-index.html" ] && [ "$(basename "$f")" != "summary-diff.html" ] && \
+    [ -f "$f" ] && [ "$(basename "$f")" != "summary-index.html" ] && \
       echo "$(basename "$f")" >> "$curr_file"
   done
+  sort -o "$curr_file" "$curr_file"
   if [ -f "$prev_file" ]; then
     echo -e "${BOLD}${G}[NEW]${N} New reports since last check:"
-    new=$(comm -13 <(sort "$prev_file") <(sort "$curr_file") | head -20)
+    new=$(comm -13 "$prev_file" "$curr_file" | head -20)
     if [ -n "$new" ]; then echo "$new"; else echo "  (none)"; fi
     echo ""
     echo -e "${BOLD}${R}[MISSING]${N} Reports removed:"
-    old=$(comm -23 <(sort "$prev_file") <(sort "$curr_file") | head -20)
+    old=$(comm -23 "$prev_file" "$curr_file" | head -20)
     if [ -n "$old" ]; then echo "$old"; else echo "  (none)"; fi
   else
     echo "First diff snapshot saved. Run again after more scans."
   fi
   cp "$curr_file" "$prev_file"
-  rm -f "$curr_file"
 }
 
 auto_exploit() {
