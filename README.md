@@ -1,218 +1,102 @@
-<div align="center">
-  <pre>
-____  ___.________.    ____.   _____.___.
-\   \/  /\_   __   \  /  _  \  \__  |   |
- \     /  |    _  _/ /  /_\  \  /   |   |
- /     \  |    |   \/    |    \ \____   |
-\___/\  \ |____|   /\____|_   / / _____/
-      \_/       \_/        \_/  \/
-  </pre>
+# Xray Patched
 
-  # Xray 1.9.11 - Patched Advanced
+Xray 1.9.11 ARM64 — **ADVANCED** (patched, no license check)
 
-  [![Arch](https://img.shields.io/badge/arch-ARM64-red)](#)
-  [![Status](https://img.shields.io/badge/status-stable-brightgreen)](#)
-  [![License](https://img.shields.io/badge/license-ADVANCED-blueviolet)](#)
-  [![Build](https://img.shields.io/badge/build-2023--05--18-orange)](#)
-
-  **Xray Community Edition — Fully Patched to ADVANCED License**
-
-  <sub>No license file required · All plugins enabled · 819+ POCs loaded</sub>
-
-  <br>
-
-  [🚀 Installation](#installation) •
-  [📖 Usage](#usage) •
-  [🎯 Examples](#examples) •
-  [📋 Commands](#commands) •
-  [🔧 Patches](#patches)
-
-  <br>
-</div>
-
----
-
-## ✨ Features
-
-- **Fully Unlocked** — All premium features enabled, no restrictions
-- **Zero Config** — No license file needed, works straight out of the box
-- **819+ POCs** — Full proof-of-concept engine loaded and ready
-- **All Plugins** — xss, sqli, ssrf, rce, shiro, fastjson, xstream, and more
-- **ARM64 Native** — Optimized for aarch64 devices (Termux, RPi, AWS Graviton)
-- **Menu Wrapper** — User-friendly menu script included
-
-<br>
-
-## 🔧 Installation
-
-### Prerequisites
-- Linux ARM64 (aarch64) device
-- Git (optional, for cloning)
-
-### Clone & Run
+## Installation
 
 ```bash
-git clone https://github.com/ARIFxVOID/xray-patched.git
-cd xray-patched
-chmod +x xray-patched xray-menu.sh
+cd /storage/emulated/0/xray
+bash install.sh
 ```
 
-### Using the Menu (Recommended)
+Selesai. Ketik `xray` aja langsung.
+
+Atau manual: `bash xray-menu.sh`
+
+## CLI Usage
 
 ```bash
-bash xray-menu.sh
+xray webscan https://target.com          # Scan website
+xray servicescan 192.168.1.1:8080        # Scan service/port
+xray subdomain target.com                # Scan subdomain
+xray fullscan https://target.com         # Scan semua plugin
+xray massal list.txt                     # Scan dari file (1 URL/baris)
+xray schedule https://target.com 3600 5  # Scan setiap 1 jam, 5 kali
+xray poclint "poc/*.yaml"               # Validasi POC
+xray reverse                             # Jalankan reverse server
+xray genca                               # Generate CA certificate
+xray version                             # Tampilkan versi
+xray menu                                # Mode interaktif
+xray help                                # Bantuan
 ```
 
-A colorful interactive menu will appear — just pick a number and go.
+## Menu Interaktif (17 opsi)
 
-### Direct Binary
+| # | Perintah | Fungsi |
+|---|----------|--------|
+| 1 | webscan | Scan website tunggal |
+| 2 | servicescan | Scan service/port |
+| 3 | subdomain | Scan subdomain |
+| 4 | x | Scan semua plugin |
+| 5 | **webscan massal** | Scan dari file list |
+| 6 | **schedule scan** | Scan otomatis berulang |
+| 7 | poclint | Validasi POC yaml |
+| 8 | reverse | Jalankan reverse server |
+| 9 | genca | Generate CA |
+| 10 | version | Tampilkan versi |
+| 11 | convert | Convert hasil scan |
+| 12 | burp-gamma | Convert Burp export |
+| 13 | transform | Transform script |
+| 14 | update POC | Download POCs terbaru |
+| 15 | **POC builder** | Buat/validasi POC |
+| 16 | **summary** | Gabung semua hasil scan |
+| 17 | **install** | Setup tools |
 
-```bash
-./xray-patched version
+## Features
+
+### Reverse Server
+Reverse server aktif otomatis (HTTP:9999, DNS:5353, RMI:1099).
+Semua POC yang butuh reverse server bakal jalan full.
+
+### Report Auto-Save
+Semua hasil scan otomatis ke folder `reports/` dengan timestamp.
+
+### Summary Report
+Gabung semua hasil scan jadi satu file HTML:
+```
+Menu > 16) summary
+Atau: buka reports/summary-*.html
 ```
 
-<br>
+### POC Builder
+Buat POC baru langsung dari menu (15) atau CLI.
+Template otomatis, validasi langsung.
 
-## 📖 Usage
-
-### Basic Scanning
-
-```bash
-# Single URL scan with all plugins
-./xray-patched x --url https://target.com
-
-# Single URL scan with specific plugins
-./xray-patched webscan --url https://target.com --plugins xss,sqli
-
-# Scan with HTML report
-./xray-patched webscan --url https://target.com --html-output report.html
+### Massal Scan
+Taruh URL di file (1 per baris), scan semua otomatis.
+```
+echo "https://target1.com" > targets.txt
+echo "https://target2.com" >> targets.txt
+xray massal targets.txt
 ```
 
-### Service Scanning
+## Files
 
-```bash
-./xray-patched servicescan --target 192.168.1.100:8080
-./xray-patched servicescan --target 10.0.0.50:7001 --module weblogic
+```
+xray-patched       - Binary utama (ADVANCED)
+xray-menu.sh       - Mode interaktif (17 menu)
+xray               - CLI mode
+install.sh         - Installer
+config.yaml        - Konfigurasi (reverse ON)
+module.xray.yaml   - Konfigurasi module
+plugin.xray.yaml   - Konfigurasi plugin
+xray.yaml          - Konfigurasi perintah
+reports/           - Hasil scan
+poc/               - POC files
+lists/             - Daftar target
 ```
 
-### Subdomain Enumeration
+## Credits
 
-```bash
-./xray-patched subdomain --target example.com
-./xray-patched subdomain --target example.com --no-brute
-./xray-patched subdomain --target example.com --ip-only
-```
-
-### POC Linting
-
-```bash
-./xray-patched poclint --script "/path/to/pocs/*.yml"
-```
-
-<br>
-
-## 🎯 Examples
-
-### Full Security Scan
-
-```bash
-# Scan with all plugins + HTML output
-./xray-patched x --url https://example.com \
-  --html-output /tmp/scan-result.html \
-  --json-output /tmp/scan-result.json
-```
-
-### Proxy Mode (Passive Scan)
-
-```bash
-# Start as reverse proxy on port 1111
-./xray-patched webscan --listen 127.0.0.1:1111
-
-# Then configure your browser to use proxy 127.0.0.1:1111
-# Xray will automatically analyze all traffic
-```
-
-### Crawl + Scan
-
-```bash
-# Basic crawler
-./xray-patched webscan --basic-crawler https://example.com
-
-# Browser-based crawler (more thorough)
-./xray-patched webscan --browser-crawler https://example.com
-```
-
-### Generate CA Certificate
-
-```bash
-./xray-patched genca
-# Creates ca.crt and ca.key for HTTPS inspection
-```
-
-<br>
-
-## 📋 Commands
-
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `webscan` | `ws` | Web vulnerability scanning |
-| `servicescan` | `ss` | Service/port scanning |
-| `subdomain` | `sd` | Subdomain enumeration |
-| `x` | — | All plugins enabled |
-| `poclint` | `pl`, `lint` | Validate YAML POC files |
-| `reverse` | — | Standalone reverse server |
-| `convert` | — | Convert JSON ↔ HTML results |
-| `genca` | — | Generate CA certificate & key |
-| `burp-gamma` | `btg` | Convert Burp exports to POC |
-| `transform` | — | Transform scripts to gamma format |
-| `upgrade` | — | Check and apply updates |
-| `version` | — | Show version information |
-| `help` | `h` | Show help |
-
-<br>
-
-## 🔧 Patches Applied
-
-| Patch | Location | Description |
-|-------|----------|-------------|
-| **parseLicenseContent** | `VA 0x132bd50` | Skipped entire crypto/validation, returns `"ADVANCED"` directly |
-| **Display string** | `VA 0x32dce08` | Changed `"COMMUNITY"` → `"ADVANCED"` in rodata |
-
-The binary's original logic and output remain untouched — only the license enforcement was neutralized.
-
-### Technical Details
-
-- **AES-128 Key found**: `b293c506e0c7f60353c604961837b810`
-- **Method**: Function prologue replaced with immediate return of `("ADVANCED", 8, nil)`
-- **Result**: All premium features unlocked, zero crashes
-
-<br>
-
-## 💡 Tips
-
-- Use `--html-output` or `--json-output` to persist scan results
-- Configure `config.yaml` for reverse server settings (needed for blind plugins)
-- For browser crawler mode, ensure Chrome/Chromium is installed
-- The binary runs on any Linux ARM64 environment (Termux, Docker, native)
-
-<br>
-
-## ⚠️ Notes
-
-- **ARM64 only** — will not run on x86/x64 without emulation
-- No original Xray code was modified — only license validation was patched
-- All credits go to the original Xray team at [chaitin](https://github.com/chaitin/xray)
-
-<br>
-
-<div align="center">
-  <br>
-  <sub>
-    — <b>Author: Arif</b> ·
-    <code>SELAMAT MAMAKAI TOOLS YA KONTOL</code> ·
-    <a href="https://github.com/ARIFxVOID">@ARIFxVOID</a> —
-  </sub>
-  <br><br>
-  <sub><i>For educational and authorized security testing purposes only.</i></sub>
-  <br>
-</div>
+- Original: [chaitin/xray](https://github.com/chaitin/xray)
+- Patched by: [ARIFxVOID](https://github.com/ARIFxVOID)

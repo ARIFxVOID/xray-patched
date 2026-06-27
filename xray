@@ -1,0 +1,124 @@
+#!/bin/bash
+# Xray Patched CLI - https://github.com/ARIFxVOID/xray-patched
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+XRAY_CACHE="/data/data/com.termux/files/home/.xray-patched"
+REPORT_DIR="$SCRIPT_DIR/reports"
+
+if [ ! -x "$XRAY_CACHE" ]; then
+  cp "$SCRIPT_DIR/xray-patched" "$XRAY_CACHE" 2>/dev/null
+  chmod +x "$XRAY_CACHE" 2>/dev/null
+fi
+XRAY="$XRAY_CACHE"
+[ -x "$XRAY" ] || XRAY="$SCRIPT_DIR/xray-patched"
+[ -x "$XRAY" ] || { echo "Xray binary not found"; exit 1; }
+
+mkdir -p "$REPORT_DIR"
+
+show_help() {
+  echo "Xray Patched CLI - Usage:"
+  echo "  xray webscan <url>              Scan website"
+  echo "  xray servicescan <host:port>    Scan service/port"
+  echo "  xray subdomain <domain>         Scan subdomain"
+  echo "  xray fullscan <url>             Scan semua plugin"
+  echo "  xray massal <file>              Scan dari file list"
+  echo "  xray schedule <url> [interval] [count]  Scan berulang"
+  echo "  xray poclint <pattern>          Validasi POC"
+  echo "  xray reverse                    Start reverse server"
+  echo "  xray genca                      Generate CA"
+  echo "  xray version                    Tampilkan versi"
+  echo "  xray menu                       Mode interaktif"
+  echo "  xray help                       Ini"
+}
+
+case "${1:-menu}" in
+  webscan)
+    url="${2:-}"
+    [ -z "$url" ] && { echo "Usage: xray webscan <url>"; exit 1; }
+    ts=$(date +%Y%m%d-%H%M%S)
+    out="$REPORT_DIR/webscan-$ts.html"
+    cd "$SCRIPT_DIR" && $XRAY webscan --url "$url" --html-output "$out"
+    echo "Report: $out"
+    ;;
+  servicescan)
+    target="${2:-}"
+    module="${3:-weblogic}"
+    [ -z "$target" ] && { echo "Usage: xray servicescan <host:port> [module]"; exit 1; }
+    cd "$SCRIPT_DIR" && $XRAY servicescan --target "$target" --module "$module"
+    ;;
+  subdomain)
+    domain="${2:-}"
+    [ -z "$domain" ] && { echo "Usage: xray subdomain <domain>"; exit 1; }
+    ts=$(date +%Y%m%d-%H%M%S)
+    out="$REPORT_DIR/subdomain-$ts.html"
+    cd "$SCRIPT_DIR" && $XRAY subdomain --target "$domain" --html-output "$out"
+    echo "Report: $out"
+    ;;
+  fullscan)
+    url="${2:-}"
+    [ -z "$url" ] && { echo "Usage: xray fullscan <url>"; exit 1; }
+    ts=$(date +%Y%m%d-%H%M%S)
+    out="$REPORT_DIR/fullscan-$ts.html"
+    cd "$SCRIPT_DIR" && $XRAY x --url "$url" --html-output "$out"
+    echo "Report: $out"
+    ;;
+  massal)
+    file="${2:-}"
+    [ -z "$file" ] && { echo "Usage: xray massal <file>"; exit 1; }
+    [ ! -f "$file" ] && { echo "File not found: $file"; exit 1; }
+    total=$(wc -l < "$file")
+    i=0
+    while IFS= read -r url; do
+      [ -z "$url" ] && continue
+      i=$((i+1))
+      ts=$(date +%Y%m%d-%H%M%S)
+      safe=$(echo "$url" | sed 's|https\?://||;s|[/:]|_|g')
+      out="$REPORT_DIR/massal-${i}-${safe}-$ts.html"
+      echo "[$i/$total] $url"
+      cd "$SCRIPT_DIR" && $XRAY webscan --url "$url" --html-output "$out" 2>/dev/null
+    done < "$file"
+    echo "Done: $i targets"
+    ;;
+  schedule)
+    url="${2:-}"
+    interval="${3:-3600}"
+    count="${4:-0}"
+    [ -z "$url" ] && { echo "Usage: xray schedule <url> [interval] [count]"; exit 1; }
+    c=0
+    while true; do
+      [ "$count" -gt 0 ] && [ "$c" -ge "$count" ] && break
+      c=$((c+1))
+      ts=$(date +%Y%m%d-%H%M%S)
+      out="$REPORT_DIR/schedule-${c}-$ts.html"
+      echo "[$c] $(date) Scanning $url"
+      cd "$SCRIPT_DIR" && $XRAY webscan --url "$url" --html-output "$out" 2>/dev/null
+      [ "$count" -le 0 ] || [ "$c" -lt "$count" ] && sleep "$interval"
+    done
+    echo "Schedule done"
+    ;;
+  poclint)
+    pattern="${2:-}"
+    [ -z "$pattern" ] && pattern="$SCRIPT_DIR/poc/*.yaml"
+    cd "$SCRIPT_DIR" && $XRAY poclint --script "$pattern"
+    ;;
+  reverse)
+    cd "$SCRIPT_DIR" && $XRAY reverse
+    ;;
+  genca)
+    cd "$SCRIPT_DIR" && $XRAY genca
+    echo "CA: $SCRIPT_DIR/ca.crt"
+    ;;
+  version)
+    cd "$SCRIPT_DIR" && $XRAY version
+    ;;
+  menu|"")
+    bash "$SCRIPT_DIR/xray-menu.sh"
+    ;;
+  help|--help|-h)
+    show_help
+    ;;
+  *)
+    echo "Unknown: $1"
+    show_help
+    exit 1
+    ;;
+esac

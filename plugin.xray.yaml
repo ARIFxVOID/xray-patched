@@ -52,6 +52,11 @@ vuln-scan:
     webhook_output: ""
 
 # 
+# printer.disable_host_print        [bool]                不在命令行打印host信息
+# printer.disable_port_print        [bool]                不在命令行打印port信息
+# printer.disable_service_print     [bool]                不在命令行打印service信息
+# printer.disable_website_print     [bool]                不在命令行打印website信息
+# 
 # service-scan.port                 [string]              要扫描的端口
 # service-scan.bandwidth            [int]                 SYN/ICMP扫描最大带宽占用（KB/s）
 # service-scan.timeout              [int]                 探测超时（秒）
@@ -78,8 +83,3 @@ vuln-scan:
 # vuln-scan.tags                    [string]              选择启动哪些标签的POC，首先需要在配置文件中添加标签
 # vuln-scan.level                   [string]              选择启动哪些漏洞等级的POC [low,medium,high,critical]
 # vuln-scan.flag                    [map-string-string]   
-# 
-# printer.disable_host_print        [bool]                不在命令行打印host信息
-# printer.disable_port_print        [bool]                不在命令行打印port信息
-# printer.disable_service_print     [bool]                不在命令行打印service信息
-# printer.disable_website_print     [bool]                不在命令行打印website信息
