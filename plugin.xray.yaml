@@ -2,7 +2,10 @@ rinter:
     disable_host_print: false
     disable_port_print: false
     disable_service_print: false
-    disable_website_print: false                                                                                                                                                 service-scan:                                                                                                                                                                        bandwidth: 1000                                                                                                                                                                  flag:
+    disable_website_print: false
+service-scan:
+    bandwidth: 1000
+    flag:
         bandwidth: bandwidth,bw
         max_service_per_host: max-srv,ms
         port: port,p
@@ -45,38 +48,3 @@ vuln-scan:
     poc: ""
     stdout: true
     tags: ""
-    text_output: ""
-    webhook_output: ""
-
-#
-# printer.disable_host_print        [bool]                 M \  Q 令 L I~S M host信 A
-# printer.disable_port_print        [bool]                 M \  Q 令 L I~S M port信 A
-# printer.disable_service_print     [bool]                 M \  Q 令 L I~S M service信 A
-# printer.disable_website_print     [bool]                 M \  Q 令 L I~S M website信 A
-#
-# service-scan.port                 [string]               A I  O~O Z~D端 O
-# service-scan.bandwidth            [int]                 SYN/ICMP I  O~O \~@大带宽 M  T  HKB/s I
-# service-scan.timeout              [int]                  N  K E W  H R I
-# service-scan.skip_live            [bool]                跳 G主 \ 活货 N  K
-# service-scan.skip_syn             [bool]                跳 GSYN端 O  I  O~O
-# service-scan.skip_fingerprint     [bool]                跳 G对端 O  Z~D L~G纹 F H
-# service-scan.skip_web_fingerprint [bool]                跳 G对http \~M J  Z~Dweb L~G纹 F H
-# service-scan.max_service_per_host [int]                  M~U主 \  \~@大 \~M J  U  G~O H E G C  H~F F M [ L N  K I
-# service-scan.flag                 [map-string-string]
-#
-# target-parser.target              [string]               [  G L BURL @~A _~_ P~M @~AIP @~ACIDR L转 L~V为x.EventTarget以 O~J[]x.EventTarget K件
-# target-parser.group_size          [int]                  O次 T~_ H~P Z~D[]x.EventTarget Z~D大 O L S<=0 W  L F @次 @ 解 ^~P M~U次 S E  E  C  S G
-# target-parser.flag                [map-string-string]
-#
-# vuln-scan.config_file             [string]               O ^ I  O~O E~M置 V~G件 P~M
-# vuln-scan.log_level               [string]               W  W I级
-# vuln-scan.plugins                 [string]               L~G Z P L Z~D O~R件 P~M L以 ','  H~F I
-# vuln-scan.poc                     [string]               L~G Z P L Z~DPOC L以 ','  H~F I
-# vuln-scan.stdout                  [bool]                 S G  W  W H stdout
-# vuln-scan.text_output             [string]               S G xray S ^~\ G txt V~G件
-# vuln-scan.json_output             [string]               S G xray S ^~\ G json V~G件
-# vuln-scan.html_output             [string]               S G xray S ^~\ G html V~G件
-# vuln-scan.webhook_output          [string]              以JSON格 OPOST xray S ^~\ G  L~G ZURL
-# vuln-scan.tags                    [string]               @~I K  P  J  S  [ G签 Z~DPOC L V E~H \~@ A \  E~M置 V~G件中添 J  G签
-# vuln-scan.level                   [string]               @~I K  P  J  S  [ O ^ I级 Z~DPOC [low,medium,high,critical]
-# vuln-scan.flag                    [map-string-string]

@@ -59,28 +59,3 @@ Reverse:
         listen_port: ""
     token: ""
 
-#
-# Pool.size                 [int]                 go routine 池 Z~D大 O L M  K件 D P~F并 O~Q度
-#
-# Reverse.db_file_path      [string]               O~M ^平 O  U  M  S V~G件 M置,  Y X  @个 KV  U  M  S
-# Reverse.token             [string]               O~M ^平 O 认 A Z~D Token,  K  K C 署 W  M C 为空
-# Reverse.http              []
-# Reverse.dns               []
-# Reverse.rmi               []
-# Reverse.client            []
-#
-# Client.proxy              [string]               O ^ I  O~O W 使 T  Z~D代 P~F L B: http://127.0.0.1:8080 @~B  B \~@设置 Z个代 P~F L请使 T  proxy_rule  H~V G  L H~[建 J B代 P~F
-# Client.proxy_rule         []                     O ^ I  O~O使 T  Z个代 P~F Z~D E~M置 D H~Y,  E  S请 O~B E  V~G档
-# Client.dial_timeout       [int]                 建 K tcp  ^ N  Z~D E W  W  W
-# Client.read_timeout       [int]                 读 O~V http  S~M T Z~D E W  W  W  L M O 太 O L P  H~Y Z影 S~M H  sql  W  W  [ 注 Z~D H  V
-# Client.max_conns_per_host [int]                  P~L @ host  \~@大 E~A许 Z~D ^ N  U  L O 以根 M  [  G主 \  @  C  @~B S ^大
-# Client.enable_http2       [bool]                 X  P  P  T  http2,  @ P  O 以 O~P M~G C  H~F Q Y Z~D @~_度 L F [  I~M M稳 Z \~I崩 C Z~D N Y
-# Client.pkcs12             []
-# Client.passive_mode       [bool]                被 J 模 O,  @ 为true W ,  I~@ \~I请 B C  Z T [~^FakeResponse
-# Client.active_paths       [slice-string]        被 J 模 O K,  M Z主 J  O~Q起请 B Z~D路 D
-# Client.fail_retries       [int]                 请 B失败 Z~D G~M U次 U  L0  H~Y M G~M U
-# Client.max_redirect       [int]                  M~U个请 B \~@大 E~A许 Z~D跳转 U
-# Client.max_resp_body_size []                     \~@大 E~A许 Z~D S~M T大 O,  X认 2M
-# Client.max_qps            []                     O R \~@大请 B U
-# Client.allow_methods      [slice-string]         E~A许 Z~D请 B V  U
-# Client.headers            [map-string-string]
