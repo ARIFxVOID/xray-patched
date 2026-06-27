@@ -209,7 +209,7 @@ The binary's original logic and output remain untouched — only the license enf
   <br>
   <sub>
     — <b>Author: Arif</b> ·
-    <code>hacked by arif😹</code> ·
+    <code>SELAMAT MAMAKAI TOOLS YA KONTOL</code> ·
     <a href="https://github.com/ARIFxVOID">@ARIFxVOID</a> —
   </sub>
   <br><br>
