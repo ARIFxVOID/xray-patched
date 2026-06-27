@@ -1,0 +1,176 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPORT_DIR="$SCRIPT_DIR/reports"
+POC_DIR="$SCRIPT_DIR/poc"
+
+R='\033[31m'; G='\033[32m'; Y='\033[33m'; B='\034[34m'; C='\033[36m'; W='\033[37m'; N='\033[0m'
+BOLD='\033[1m'
+
+interactsh_setup() {
+  echo -e "${BOLD}${C}[Interactsh]${N} Setting up reverse server publik..."
+  python3 -c "
+import yaml
+with open('$SCRIPT_DIR/config.yaml') as f: cfg = yaml.safe_load(f)
+cfg.setdefault('reverse', {})
+cfg['reverse']['db_file_path'] = ''
+cfg['reverse']['token'] = ''
+cfg['reverse']['http'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '9999'}
+cfg['reverse']['dns'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '5353'}
+cfg['reverse']['rmi'] = {'enabled': True, 'listen_ip': '0.0.0.0', 'listen_port': '1099'}
+cfg['reverse']['client'] = {'reverse_api': 'https://api.interactsh.com', 'remote_server': True}
+cfg['reverse']['remote_server'] = True
+with open('$SCRIPT_DIR/config.yaml', 'w') as f: yaml.dump(cfg, f, default_flow_style=False)
+"
+  echo -e "${G}✓ Config updated: reverse → interactsh${N}"
+  echo -e "${Y}   Semua POC reverse bakal pake interact.sh${N}"
+}
+
+cve_lookup() {
+  cve_id="${1:-}"
+  [ -z "$cve_id" ] && echo -ne "${C}CVE ID${N} (contoh: CVE-2023-21839): " && read cve_id
+  [ -z "$cve_id" ] && return
+  echo -e "${BOLD}${C}[CVE Lookup]${N} Looking up $cve_id..."
+  data=$(curl -s "https://cve.circl.lu/api/cve/$cve_id" 2>/dev/null)
+  if [ -z "$data" ] || echo "$data" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null | grep -q .; then
+    python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+print(f'  ID      : {d.get(\"id\",\"N/A\")}')
+print(f'  Score   : {d.get(\"cvss\",{}).get(\"score\",\"N/A\")}')
+print(f'  Severity: {d.get(\"cvss\",{}).get(\"severity\",\"N/A\")}')
+print(f'  Desc    : {d.get(\"description\",\"N/A\")[:300]}')
+print(f'  Products: {\", \".join([v.get(\"product\",\"\") for v in d.get(\"vulnerable_product\",[])])}')
+" <<< "$data" 2>/dev/null
+    # Searchsploit
+    if command -v searchsploit &>/dev/null; then
+      echo ""
+      echo -e "${BOLD}${Y}[Searchsploit]${N} Looking for exploits..."
+      searchsploit --cve "$cve_id" 2>/dev/null | grep -v "^$" | head -20
+    else
+      echo -e "${Y}[!] searchsploit not installed. Install: apt install exploitdb${N}"
+    fi
+  else
+    echo -e "${R}CVE not found${N}"
+  fi
+}
+
+searchsploit_lookup() {
+  query="${1:-}"
+  [ -z "$query" ] && echo -ne "${C}Search query${N} (CVE/nama): " && read query
+  [ -z "$query" ] && return
+  if command -v searchsploit &>/dev/null; then
+    echo -e "${BOLD}${C}[Searchsploit]${N} Searching: $query"
+    searchsploit "$query" 2>/dev/null | head -40
+  else
+    echo -e "${Y}[!] searchsploit not installed. Install: apt install exploitdb${N}"
+    echo -e "${Y}     Atau cari manual: https://www.exploit-db.com${N}"
+  fi
+}
+
+diff_scan() {
+  echo -e "${BOLD}${C}[Diff Scan]${N} Comparing scan results..."
+  diff_dir="$REPORT_DIR/.diffs"
+  prev_file="$diff_dir/previous.txt"
+  mkdir -p "$diff_dir"
+  # Snapshot current
+  curr_file=$(mktemp)
+  for f in "$REPORT_DIR"/*.html; do
+    [ -f "$f" ] && [ "$(basename "$f")" != "summary-index.html" ] && [ "$(basename "$f")" != "summary-diff.html" ] && \
+      echo "$(basename "$f")" >> "$curr_file"
+  done
+  if [ -f "$prev_file" ]; then
+    echo -e "${BOLD}${G}[NEW]${N} New reports since last check:"
+    new=$(comm -13 <(sort "$prev_file") <(sort "$curr_file") | head -20)
+    if [ -n "$new" ]; then echo "$new"; else echo "  (none)"; fi
+    echo ""
+    echo -e "${BOLD}${R}[MISSING]${N} Reports removed:"
+    old=$(comm -23 <(sort "$prev_file") <(sort "$curr_file") | head -20)
+    if [ -n "$old" ]; then echo "$old"; else echo "  (none)"; fi
+  else
+    echo "First diff snapshot saved. Run again after more scans."
+  fi
+  cp "$curr_file" "$prev_file"
+  rm -f "$curr_file"
+}
+
+auto_exploit() {
+  target="${1:-}"
+  [ -z "$target" ] && echo -ne "${C}Target URL${N}: " && read target
+  [ -z "$target" ] && return
+  echo -e "${BOLD}${C}[Auto Exploit]${N} Target: $target${N}"
+  temp_report=$(mktemp)
+  cd "$SCRIPT_DIR"
+  # 1. Scan with xray
+  echo -e "${Y}[1] Scanning with Xray...${N}"
+  xray_bin="/root/.xray-patched"
+  [ -x "$xray_bin" ] || xray_bin="$SCRIPT_DIR/xray-patched"
+  "$xray_bin" webscan --url "$target" --json-output "$temp_report" 2>/dev/null
+  
+  # 2. Parse results for CVEs and vulnerabilities
+  echo -e "${Y}[2] Analyzing results...${N}"
+  if [ -f "$temp_report" ] && [ -s "$temp_report" ]; then
+    python3 -c "
+import sys,json
+try:
+    with open('$temp_report') as f: data=json.load(f)
+    vulns = data if isinstance(data, list) else [data]
+    for v in vulns:
+        plugin = v.get('plugin','')
+        detail = v.get('detail','') or v.get('info','')
+        url = v.get('url','') or v.get('target','')
+        cve = v.get('cve','')
+        if plugin: print(f'  Plugin: {plugin}')
+        if url: print(f'  URL: {url}')
+        if cve: print(f'  CVE: {cve}')
+        if detail: print(f'  Detail: {detail}')
+        print()
+except: pass
+" 2>/dev/null
+  fi
+
+  # 3. Search for exploits
+  echo -e "${Y}[3] Searching exploits...${N}"
+  if command -v searchsploit &>/dev/null; then
+    cves=$(python3 -c "
+import json
+try:
+    with open('$temp_report') as f: data=json.load(f)
+    items = data if isinstance(data, list) else [data]
+    for v in items:
+        c = v.get('cve','')
+        if c: print(c)
+except: pass
+" 2>/dev/null)
+    for cve in $cves; do
+      echo -e "${B}  $cve${N}"
+      searchsploit --cve "$cve" 2>/dev/null | grep -E "^[[:space:]]*[0-9]" | head -5
+    done
+  fi
+
+  # 4. Run nuclei if available
+  if command -v nuclei &>/dev/null; then
+    echo -e "${Y}[4] Verifying with Nuclei...${N}"
+    nuclei -u "$target" -severity critical,high -o /tmp/nuclei-results.txt 2>/dev/null
+    [ -f /tmp/nuclei-results.txt ] && cat /tmp/nuclei-results.txt | head -10
+  fi
+
+  rm -f "$temp_report"
+  echo -e "${G}[+] Done${N}"
+}
+
+case "${1:-help}" in
+  interactsh) interactsh_setup ;;
+  cve) cve_lookup "$2" ;;
+  searchsploit) searchsploit_lookup "$2" ;;
+  diff) diff_scan ;;
+  exploit) auto_exploit "$2" ;;
+  help|--help|-h)
+    echo "Xray Tools Usage:"
+    echo "  xray tools interactsh           Setup interact.sh reverse"
+    echo "  xray tools cve <CVE-ID>         CVE lookup + searchsploit"
+    echo "  xray tools searchsploit <query> Search exploit-db"
+    echo "  xray tools diff                 Compare scan results"
+    echo "  xray tools exploit <url>        Auto exploit target"
+    ;;
+  *) echo "Usage: bash xray-tools <command> [args]" ;;
+esac

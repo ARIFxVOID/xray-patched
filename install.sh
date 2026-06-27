@@ -69,7 +69,20 @@ SHEOF
 fi
 
 # 5. Done
-echo -e "${Y}[5/5]${N} Finalizing..."
+# 5. Install dependencies
+echo -e "${Y}[5/6]${N} Installing dependencies..."
+if command -v pkg &>/dev/null; then
+  pkg install -y python python-pip exploitdb 2>/dev/null || true
+elif command -v apt &>/dev/null; then
+  apt install -y python3 python3-pip exploitdb 2>/dev/null || true
+fi
+pip3 install pyyaml 2>/dev/null || true
+echo -e "  ${G}✓${N} Dependencies ready"
+
+# 6. Make CLI executable
+echo -e "${Y}[6/6]${N} Finalizing..."
+chmod +x "$DIR/xray" 2>/dev/null
+chmod +x "$DIR/xray-webui" 2>/dev/null
 echo ""
 echo -e "${BOLD}${G}✓ INSTALLATION COMPLETE${N}"
 echo -e "${W}  Repo  :${N} $DIR"

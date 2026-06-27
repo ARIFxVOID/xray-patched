@@ -21,11 +21,18 @@ show_help() {
   echo "  xray subdomain <domain>         Scan subdomain"
   echo "  xray fullscan <url>             Scan semua plugin"
   echo "  xray massal <file>              Scan dari file list"
-  echo "  xray schedule <url> [interval] [count]  Scan berulang"
+  echo "  xray schedule <url> [int] [cnt] Scan berulang"
   echo "  xray poclint <pattern>          Validasi POC"
   echo "  xray reverse                    Start reverse server"
   echo "  xray genca                      Generate CA"
   echo "  xray version                    Tampilkan versi"
+  echo "  xray webui                      Dashboard browser"
+  echo "  xray tools <cmd> [args]         Tools (interactsh/CVE/exploit/diff)"
+  echo "  xray tools exploit <url>        Auto exploit target"
+  echo "  xray tools cve <CVE-ID>         CVE lookup + searchsploit"
+  echo "  xray tools interactsh           Setup interact.sh"
+  echo "  xray tools diff                 Diff scan results"
+  echo "  xray tools searchsploit <q>     Search exploit-db"
   echo "  xray menu                       Mode interaktif"
   echo "  xray help                       Ini"
 }
@@ -109,6 +116,13 @@ case "${1:-menu}" in
     ;;
   version)
     cd "$SCRIPT_DIR" && $XRAY version
+    ;;
+  webui)
+    python3 "$SCRIPT_DIR/xray-webui"
+    ;;
+  tools)
+    shift
+    bash "$SCRIPT_DIR/xray-tools" "$@"
     ;;
   menu|"")
     bash "$SCRIPT_DIR/xray-menu.sh"

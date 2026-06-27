@@ -53,6 +53,11 @@ show_menu() {
   echo -e "  ${G}15)${N}  ${W}POC builder${N}       ${C}-${N} Buat/validasi POC"
   echo -e "  ${B}16)${N}  ${W}summary${N}           ${C}-${N} Gabung hasil scan"
   echo -e "  ${M}17)${N}  ${W}install${N}           ${C}-${N} Setup tools"
+  echo -e "  ${R}18)${N}  ${W}web UI${N}            ${C}-${N} Dashboard browser"
+  echo -e "  ${Y}19)${N}  ${W}CVE lookup${N}        ${C}-${N} Cari detail CVE"
+  echo -e "  ${G}20)${N}  ${W}searchsploit${N}      ${C}-${N} Cari exploit DB"
+  echo -e "  ${B}21)${N}  ${W}diff scan${N}          ${C}-${N} Banding hasil scan"
+  echo -e "  ${M}22)${N}  ${W}auto exploit${N}       ${C}-${N} Scan + exploit target"
   echo -e "  ${R} 0)${N}  ${W}Keluar${N}"
   echo ""
 }
@@ -294,7 +299,7 @@ while true; do
   clear
   show_banner
   show_menu
-  echo -ne "${BOLD}${Y}Pilih menu [0-17]:${N} "
+  echo -ne "${BOLD}${Y}Pilih menu [0-22]:${N} "
   read pilihan
 
   case $pilihan in
@@ -315,6 +320,20 @@ while true; do
     15) poc_builder ;;
     16) summary_report ;;
     17) install_tool ;;
+    18) python3 "$SCRIPT_DIR/xray-webui" ;;
+    19)
+      echo -ne "${C}CVE ID${N}: "; read cve_id
+      bash "$SCRIPT_DIR/xray-tools" cve "$cve_id"
+      ;;
+    20)
+      echo -ne "${C}Search${N}: "; read sq
+      bash "$SCRIPT_DIR/xray-tools" searchsploit "$sq"
+      ;;
+    21) bash "$SCRIPT_DIR/xray-tools" diff ;;
+    22)
+      echo -ne "${C}Target URL${N}: "; read tgt
+      bash "$SCRIPT_DIR/xray-tools" exploit "$tgt"
+      ;;
     0) echo -e "${R}Keluar...${N}"; exit 0 ;;
     *) echo -e "${R}Pilihan tidak valid!${N}" ;;
   esac
