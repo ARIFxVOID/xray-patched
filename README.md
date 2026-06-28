@@ -99,7 +99,13 @@ xray webscan https://example.com
 
 ```bash
 bash install.sh
+git pull
 ```
+### Run Menu
+```
+bash xray-menu.sh
+```
+
 
 The installer performs the following steps:
 
