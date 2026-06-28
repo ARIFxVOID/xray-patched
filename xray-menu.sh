@@ -22,6 +22,7 @@ BOLD='\033[1m'
 mkdir -p "$REPORT_DIR" "$LIST_DIR"
 
 bash "$SCRIPT_DIR/config-gen.sh" "$SCRIPT_DIR" 2>/dev/null
+bash "$SCRIPT_DIR/config-gen.sh" "$HOME" 2>/dev/null
 
 show_banner() {
   echo -e "${R}____  ___.________.    ____.   _____.___.${N}"

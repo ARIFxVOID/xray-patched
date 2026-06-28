@@ -49,6 +49,7 @@ fi
 
 # xray.yaml / module.xray.yaml / plugin.xray.yaml
 bash "$DIR/config-gen.sh" "$DIR" 2>/dev/null
+bash "$DIR/config-gen.sh" "$HOME" 2>/dev/null
 echo -e "  ${G}✓${N} xray.yaml, module.xray.yaml, plugin.xray.yaml"
 
 # 3. Directories
