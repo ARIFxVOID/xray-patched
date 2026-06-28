@@ -65,8 +65,9 @@ cd xray-patched
 # 2. Run installer
 bash install.sh
 
-# 3. Start scanning
-xray webscan https://example.com
+# 3. Run
+git pull
+bash xray-menu.sh
 ```
 
 ---
@@ -94,18 +95,6 @@ xray webscan https://example.com
 ---
 
 ## Installation
-
-### Automatic Install
-
-```bash
-bash install.sh
-git pull
-```
-### Run Menu
-```
-bash xray-menu.sh
-```
-
 
 The installer performs the following steps:
 
