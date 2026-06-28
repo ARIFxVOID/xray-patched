@@ -64,9 +64,8 @@ cd xray-patched
 
 # 2. Run installer
 bash install.sh
-
-# 3. Start scanning
-xray webscan https://example.com
+git pull
+bash xray-menu.sh
 ```
 
 ---
