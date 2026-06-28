@@ -60,8 +60,8 @@ echo -e "  ${G}✓${N} reports/ poc/ lists/"
 echo -e "${Y}[4/6]${N} Installing dependencies..."
 PM=""
 PKGS_PYTHON=""; PKGS_PIP=""; PKGS_EXPLOIT=""
-if $IS_TERMUX && command -v pkg &>/dev/null; then
-  PM="pkg install -y"; PKGS_PYTHON="python"; PKGS_PIP=""; PKGS_EXPLOIT="exploitdb"
+if $IS_TERMUX; then
+  PM="apt install -y"; PKGS_PYTHON="python"; PKGS_PIP=""; PKGS_EXPLOIT="exploitdb"
 elif command -v apt &>/dev/null; then
   PM="apt install -y"; PKGS_PYTHON="python3"; PKGS_PIP="python3-pip"; PKGS_EXPLOIT="exploitdb"
 elif command -v dnf &>/dev/null; then
